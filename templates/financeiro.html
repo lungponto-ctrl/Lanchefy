@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Financeiro - {{ est.nome }} | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-color: {{ est.cor_primaria }};
+        }
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            transition: background-color 0.3s ease;
+        }
+        .navbar-admin {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .brand-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .card-stat {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+            transition: transform 0.2s ease;
+        }
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .table-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+        }
+        .table th {
+            font-weight: 600;
+            color: #64748b;
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .btn-custom {
+            border-radius: 10px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .btn-custom:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body id="mainBody">
+
+    <nav class="navbar navbar-expand-lg navbar-admin shadow-sm py-3 mb-4">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="brand-badge"><i class="fa-solid fa-store me-2"></i>{{ est.nome }}</span>
+                <span class="text-muted fw-semibold">| Painel Financeiro</span>
+            </div>
+            <!-- NAVBAR ATUALIZADA COM O BOTÃO DA VITRINE E DEMAIS MÓDULOS -->
+            <div class="d-flex gap-2 align-items-center">
+                <a href="/lanchonete/{{ est.slug }}" target="_blank" class="btn btn-success btn-sm fw-bold px-3">
+                    <i class="fa-solid fa-external-link-alt me-1"></i> Ver Cardápio Online 🛒
+                </a>
+                <div class="vr mx-1 text-muted"></div>
+                <a href="/admin/{{ est.slug }}/produtos" class="btn btn-custom btn-sm">
+                    <i class="fa-solid fa-burger me-1 text-muted"></i> Produtos
+                </a>
+                <a href="/admin/{{ est.slug }}/pedidos" class="btn btn-custom btn-sm">
+                    <i class="fa-solid fa-clipboard-list me-1 text-muted"></i> Pedidos
+                </a>
+                <a href="/admin/{{ est.slug }}/caixa-balcao" class="btn btn-custom btn-sm">
+                    <i class="fa-solid fa-cash-register me-1 text-muted"></i> Caixa PDV
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0"><i class="fa-solid fa-chart-pie text-muted me-2"></i>Visão Geral</h4>
+            <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i>Tempo Real</span>
+        </div>
+
+        <!-- CARDS DE ESTATÍSTICAS -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card card-stat p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted fw-semibold small text-uppercase tracking-wider">Faturamento Total</span>
+                            <h2 class="fw-bold text-success mt-2 mb-0">R$ {{ "%.2f"|format(total_faturado) }}</h2>
+                        </div>
+                        <div class="icon-box bg-success bg-opacity-10 text-success">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-stat p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted fw-semibold small text-uppercase tracking-wider">Total de Pedidos</span>
+                            <h2 class="fw-bold text-primary mt-2 mb-0">{{ qtd_pedidos }}</h2>
+                        </div>
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO MODERNO -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card card-stat p-4">
+                    <h5 class="fw-bold mb-3 text-secondary" style="font-size: 1.1rem;">Desempenho de Vendas</h5>
+                    <div style="height: 280px;">
+                        <canvas id="graficoFinanceiro"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABELA DE TRANSAÇÕES -->
+        <div class="table-container">
+            <h5 class="fw-bold mb-3 text-secondary" style="font-size: 1.1rem;"><i class="fa-solid fa-list-check me-2"></i>Histórico Detalhado</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Cliente</th>
+                            <th>Tipo</th>
+                            <th>Pagamento</th>
+                            <th>Início</th>
+                            <th>Fim</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in pedidos %}
+                        <tr>
+                            <td><strong class="text-dark">#{{ pedido.id }}</strong></td>
+                            <td>{{ pedido.cliente_nome }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ pedido.tipo_pedido }}</span></td>
+                            <td>{{ pedido.forma_pagamento }}</td>
+                            <td class="text-muted small">{{ pedido.data_inicio.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td class="text-muted small">{{ pedido.data_fim.strftime('%d/%m/%Y %H:%M') if pedido.data_fim else '-' }}</td>
+                            <td class="fw-bold text-success">R$ {{ "%.2f"|format(pedido.total) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">Nenhum registro financeiro encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE ALERTA SONORO E VISUAL GLOBAL PARA NOVOS PEDIDOS -->
+    <script>
+        let ultimoPedidoConhecido = null;
+
+        async function inicializarContadorPedidos() {
+            try {
+                let resposta = await fetch('/admin/{{ est.slug }}/verificar-novos-pedidos');
+                if (resposta.ok) {
+                    let dados = await resposta.json();
+                    ultimoPedidoConhecido = dados.ultimo_pedido_id;
+                }
+            } catch (e) {
+                console.error('Erro ao inicializar monitor de pedidos:', e);
+            }
+        }
+        inicializarContadorPedidos();
+
+        function tocarAlarmeSonoro() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const playTone = (frequency, startTime, duration) => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = frequency;
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + startTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + startTime);
+                    osc.stop(audioCtx.currentTime + startTime + duration);
+                };
+                playTone(587.33, 0, 0.2);
+                playTone(880.00, 0.25, 0.4);
+            } catch (e) {
+                console.log('Áudio aguardando interação.');
+            }
+        }
+
+        function ativarAlertaVisual() {
+            let originalTitle = document.title;
+            let piscando = true;
+            let contador = 0;
+
+            let intervaloPisca = setInterval(() => {
+                document.title = piscando ? "🚨 NOVO PEDIDO!" : originalTitle;
+                document.getElementById('mainBody').style.backgroundColor = piscando ? "#ffe4e6" : "#f8fafc";
+                piscando = !piscando;
+                contador++;
+
+                if (contador > 10) {
+                    clearInterval(intervaloPisca);
+                    document.title = originalTitle;
+                    document.getElementById('mainBody').style.backgroundColor = "#f8fafc";
+                }
+            }, 800);
+        }
+
+        setInterval(async () => {
+            if (ultimoPedidoConhecido === null) return;
+            try {
+                let resposta = await fetch('/admin/{{ est.slug }}/verificar-novos-pedidos');
+                if (!resposta.ok) return;
+                let dados = await resposta.json();
+
+                if (dados.ultimo_pedido_id > ultimoPedidoConhecido) {
+                    ultimoPedidoConhecido = dados.ultimo_pedido_id;
+                    tocarAlarmeSonoro();
+                    ativarAlertaVisual();
+
+                    setTimeout(() => {
+                        window.location.href = "/admin/{{ est.slug }}/pedidos";
+                    }, 2000);
+                }
+            } catch (erro) {
+                console.error('Erro ao checar novos pedidos:', erro);
+            }
+        }, 5000);
+
+        // Script Chart.js Otimizado
+        const ctx = document.getElementById('graficoFinanceiro').getContext('2d');
+        const graficoFinanceiro = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Faturamento Total', 'Ticket Médio'],
+                datasets: [{
+                    label: 'Valores em R$',
+                    data: [{{ total_faturado }}, {{ total_faturado / qtd_pedidos if qtd_pedidos > 0 else 0 }}],
+                    backgroundColor: ['#10b981', '#3b82f6'],
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    barThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        border: { dash: [4, 4] }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

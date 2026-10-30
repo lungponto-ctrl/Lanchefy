@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - {{ est.nome }} | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root { --primary-color: {{ est.cor_primaria }}; }
+        body { background-color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; color: #1e293b; }
+        .navbar-admin { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .brand-badge { background-color: var(--primary-color); color: white; padding: 6px 14px; border-radius: 10px; font-weight: 600; }
+        .card-custom { border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01); }
+        .form-control, .form-select { border-radius: 10px; border: 1px solid #cbd5e1; padding: 11px; font-size: 0.95rem; }
+        .btn-custom { border-radius: 10px; font-weight: 500; padding: 8px 16px; border: 1px solid #e2e8f0; background: white; color: #475569; }
+        .btn-custom:hover { background: #f1f5f9; color: #0f172a; }
+        .btn-primary-custom { background-color: var(--primary-color); border: none; border-radius: 10px; color: white; font-weight: 600; padding: 12px; }
+        .produto-img { width: 60px; height: 60px; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .table th { font-weight: 600; color: #64748b; background-color: #f8fafc !important; }
+    </style>
+</head>
+<body id="mainBody">
+
+    <nav class="navbar navbar-expand-lg navbar-admin shadow-sm py-3 mb-4">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="brand-badge"><i class="fa-solid fa-store me-2"></i>{{ est.nome }}</span>
+                <span class="text-muted fw-semibold">| Gestão de Produtos</span>
+            </div>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <a href="/admin/{{ est.slug }}/qrcode" class="btn btn-dark btn-sm fw-bold px-3">
+                    <i class="fa-solid fa-qrcode me-1"></i> QR Code Mesas 📱
+                </a>
+                <div class="vr mx-1 text-muted"></div>
+                <a href="/lanchonete/{{ est.slug }}" target="_blank" class="btn btn-success btn-sm fw-bold px-3">
+                    <i class="fa-solid fa-external-link-alt me-1"></i> Ver Cardápio 🛒
+                </a>
+                <a href="/admin/{{ est.slug }}/pedidos" class="btn btn-custom btn-sm">Pedidos</a>
+                <a href="/admin/{{ est.slug }}/caixa-balcao" class="btn btn-custom btn-sm">Caixa PDV</a>
+                <a href="/admin/{{ est.slug }}/financeiro" class="btn btn-custom btn-sm">Financeiro</a>
+                <a href="/admin/{{ est.slug }}/logout" class="btn btn-outline-danger btn-sm fw-bold px-3">Sair</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mb-5">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i>{{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-plus-circle text-muted me-2"></i>Novo Produto</h5>
+                    <form action="/admin/{{ est.slug }}/produtos" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-uppercase text-secondary">Nome do Produto</label>
+                            <input type="text" class="form-control" name="nome" placeholder="Ex: X-Burguer" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-uppercase text-secondary">Descrição</label>
+                            <textarea class="form-control" name="descricao" rows="2" placeholder="Ingredientes..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-uppercase text-secondary">Preço (R$)</label>
+                            <input type="number" step="0.01" class="form-control" name="preco" placeholder="0.00" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-uppercase text-secondary">Categoria</label>
+                            <input type="text" class="form-control" name="categoria" placeholder="Ex: Lanches, Bebidas" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-uppercase text-secondary">Foto</label>
+                            <input type="file" class="form-control" name="foto" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100 shadow-sm">Cadastrar Produto</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-burger text-muted me-2"></i>Produtos Cadastrados</h5>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Nome / Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Preço</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produto in produtos %}
+                                <tr>
+                                    <td>
+                                        {% if produto.foto %}
+                                            <img src="{{ url_for('static', filename='uploads/' + produto.foto) }}" class="produto-img" alt="Produto">
+                                        {% else %}
+                                            <div class="produto-img bg-light d-flex align-items-center justify-content-center text-muted">
+                                                <i class="fa-solid fa-image"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ produto.nome }}</div>
+                                        <small class="text-muted text-truncate d-block" style="max-width: 200px;">{{ produto.descricao or 'Sem descrição' }}</small>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">{{ produto.categoria }}</span></td>
+                                    <td class="fw-bold text-success">R$ {{ "%.2f"|format(produto.preco) }}</td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <a href="/admin/{{ est.slug }}/produto/{{ produto.id }}/editar" class="btn btn-outline-primary btn-sm" title="Editar">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+                                            <form action="/admin/{{ est.slug }}/produto/{{ produto.id }}/excluir" method="POST" onsubmit="return confirm('Deseja realmente excluir este produto?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Excluir">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-5">Nenhum produto cadastrado.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

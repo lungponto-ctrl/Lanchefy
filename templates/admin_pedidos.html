@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Pedidos - {{ est.nome }} | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: {{ est.cor_primaria }};
+        }
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            transition: background-color 0.3s ease;
+        }
+        .navbar-admin {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .brand-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .kanban-coluna {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 16px;
+            min-height: 70vh;
+            border: 1px solid #e2e8f0;
+        }
+        .card-pedido {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+        .card-pedido:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        .btn-custom {
+            border-radius: 10px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .btn-custom:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body id="mainBody">
+
+    <!-- NAVBAR COM BOTÃO DE SAIR -->
+    <nav class="navbar navbar-expand-lg navbar-admin shadow-sm py-3 mb-4">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="brand-badge"><i class="fa-solid fa-store me-2"></i>{{ est.nome }}</span>
+                <span class="text-muted fw-semibold">| Painel de Pedidos (Kanban)</span>
+            </div>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <!-- Botão da Impressora Automática -->
+                <button type="button" onclick="alternarImpressora()" id="btnImpressoraStatus" class="btn btn-sm fw-bold px-3 py-2 {% if est.impressora_automatica %}btn-outline-success{% else %}btn-outline-secondary{% endif %}">
+                    <i class="fa-solid fa-print me-1"></i>
+                    <span id="textoStatusImpressora">{% if est.impressora_automatica %}Impressora: Ligada 🖨️{% else %}Impressora: Desligada 🖨️{% endif %}</span>
+                </button>
+
+                <div class="vr mx-1 text-muted"></div>
+                <a href="/lanchonete/{{ est.slug }}" target="_blank" class="btn btn-success btn-sm fw-bold px-3">
+                    <i class="fa-solid fa-external-link-alt me-1"></i> Ver Cardápio 🛒
+                </a>
+                <a href="/admin/{{ est.slug }}/produtos" class="btn btn-custom btn-sm">Produtos</a>
+                <a href="/admin/{{ est.slug }}/caixa-balcao" class="btn btn-custom btn-sm">Caixa PDV</a>
+                <a href="/admin/{{ est.slug }}/financeiro" class="btn btn-custom btn-sm">Financeiro</a>
+
+                <!-- BOTÃO DE SAIR / LOGOUT -->
+                <div class="vr mx-1 text-muted"></div>
+                <a href="/admin/{{ est.slug }}/logout" class="btn btn-outline-danger btn-sm fw-bold px-3" title="Sair do Painel">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> Sair
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mb-5">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i>{{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- KANBAN DE PEDIDOS -->
+        <div class="row g-3">
+            <!-- COLUNA 1: RECEBIDOS -->
+            <div class="col-md-4">
+                <div class="kanban-coluna">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark m-0"><i class="fa-solid fa-inbox text-warning me-2"></i>Novos / Recebidos</h6>
+                        <span class="badge bg-warning text-dark rounded-pill">{{ pedidos | selectattr('status', 'equalto', 'Recebido') | list | length }}</span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        {% for p in pedidos if p.status == 'Recebido' %}
+                        <div class="card card-pedido p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="text-dark">#{{ p.id }} - {{ p.cliente_nome }}</strong>
+                                    <span class="badge bg-light text-secondary border small d-block mt-1">{{ p.tipo_pedido }}</span>
+                                </div>
+                                <span class="fw-bold text-success">R$ {{ "%.2f"|format(p.total) }}</span>
+                            </div>
+                            <p class="small text-muted mb-2"><i class="fa-solid fa-phone me-1"></i>{{ p.cliente_telefone or 'Não informado' }}</p>
+                            {% if p.cliente_endereco %}
+                            <p class="small text-muted mb-2"><i class="fa-solid fa-location-dot me-1"></i>{{ p.cliente_endereco }}</p>
+                            {% endif %}
+                            <p class="small text-dark mb-2"><strong>Pgto:</strong> {{ p.forma_pagamento }}</p>
+
+                            <div class="d-flex gap-2 mt-2 pt-2 border-top">
+                                <a href="/admin/{{ est.slug }}/pedido/{{ p.id }}/imprimir" target="_blank" class="btn btn-outline-dark btn-sm flex-fill" title="Imprimir Comprovante">
+                                    <i class="fa-solid fa-print"></i>
+                                </a>
+                                <button onclick="mudarStatus('{{ p.id }}', 'Em Preparo')" class="btn btn-primary btn-sm flex-fill fw-bold" style="background-color: var(--primary-color); border:none;">
+                                    Aceitar 👨‍🍳
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUNA 2: EM PREPARO -->
+            <div class="col-md-4">
+                <div class="kanban-coluna">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark m-0"><i class="fa-solid fa-fire text-danger me-2"></i>Em Preparo</h6>
+                        <span class="badge bg-danger rounded-pill">{{ pedidos | selectattr('status', 'equalto', 'Em Preparo') | list | length }}</span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        {% for p in pedidos if p.status == 'Em Preparo' %}
+                        <div class="card card-pedido p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="text-dark">#{{ p.id }} - {{ p.cliente_nome }}</strong>
+                                    <span class="badge bg-light text-secondary border small d-block mt-1">{{ p.tipo_pedido }}</span>
+                                </div>
+                                <span class="fw-bold text-success">R$ {{ "%.2f"|format(p.total) }}</span>
+                            </div>
+                            <p class="small text-muted mb-2"><i class="fa-solid phone me-1"></i>{{ p.cliente_telefone or 'Não informado' }}</p>
+                            <p class="small text-dark mb-2"><strong>Pgto:</strong> {{ p.forma_pagamento }}</p>
+
+                            <div class="d-flex gap-2 mt-2 pt-2 border-top">
+                                <a href="/admin/{{ est.slug }}/pedido/{{ p.id }}/imprimir" target="_blank" class="btn btn-outline-dark btn-sm" title="Imprimir Comprovante">
+                                    <i class="fa-solid fa-print"></i>
+                                </a>
+                                {% if p.tipo_pedido == 'Retirada' %}
+                                <form action="/admin/{{ est.slug }}/pedido/{{ p.id }}/status" method="POST" class="flex-fill">
+                                    <input type="hidden" name="status" value="Pronto para Retirada">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Pronto 🏪</button>
+                                </form>
+                                {% else %}
+                                <form action="/admin/{{ est.slug }}/pedido/{{ p.id }}/status" method="POST" class="flex-fill">
+                                    <input type="hidden" name="status" value="Enviado com Motoboy">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Enviar 🛵</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUNA 3: FINALIZADOS / PRONTOS -->
+            <div class="col-md-4">
+                <div class="kanban-coluna">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark m-0"><i class="fa-solid fa-check-circle text-success me-2"></i>Finalizados / Entregues</h6>
+                        <span class="badge bg-success rounded-pill">{{ pedidos | selectattr('status', 'in', ['Pronto para Retirada', 'Enviado com Motoboy', 'Finalizado']) | list | length }}</span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        {% for p in pedidos if p.status in ['Pronto para Retirada', 'Enviado com Motoboy', 'Finalizado'] %}
+                        <div class="card card-pedido p-3 opacity-75">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="text-dark">#{{ p.id }} - {{ p.cliente_nome }}</strong>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success small d-block mt-1">{{ p.status }}</span>
+                                </div>
+                                <span class="fw-bold text-success">R$ {{ "%.2f"|format(p.total) }}</span>
+                            </div>
+                            <p class="small text-muted mb-1"><i class="fa-solid fa-phone me-1"></i>{{ p.cliente_telefone or 'Não informado' }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS DE AUTOMAÇÃO, IMPRESSORA E ALARMES -->
+    <script>
+        let ultimoPedidoConhecido = null;
+
+        async function inicializarContadorPedidos() {
+            try {
+                let resposta = await fetch('/admin/{{ est.slug }}/verificar-novos-pedidos');
+                if (resposta.ok) {
+                    let dados = await resposta.json();
+                    ultimoPedidoConhecido = dados.ultimo_pedido_id;
+                }
+            } catch (e) {
+                console.error('Erro ao inicializar monitor de pedidos:', e);
+            }
+        }
+        inicializarContadorPedidos();
+
+        async function alternarImpressora() {
+            try {
+                let resposta = await fetch('/admin/{{ est.slug }}/toggle-impressora', { method: 'POST' });
+                if (resposta.ok) {
+                    let dados = await resposta.json();
+                    let btn = document.getElementById('btnImpressoraStatus');
+                    let texto = document.getElementById('textoStatusImpressora');
+                    if (dados.impressora_automatica) {
+                        btn.className = 'btn btn-sm fw-bold px-3 py-2 btn-outline-success';
+                        texto.innerText = 'Impressora: Ligada 🖨️';
+                    } else {
+                        btn.className = 'btn btn-sm fw-bold px-3 py-2 btn-outline-secondary';
+                        texto.innerText = 'Impressora: Desligada 🖨️';
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao alternar impressora:', e);
+            }
+        }
+
+        function tocarAlarmeSonoro() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const playTone = (frequency, startTime, duration) => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = frequency;
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + startTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + startTime);
+                    osc.stop(audioCtx.currentTime + startTime + duration);
+                };
+                playTone(587.33, 0, 0.2);
+                playTone(880.00, 0.25, 0.4);
+            } catch (e) {
+                console.log('Áudio aguardando interação.');
+            }
+        }
+
+        function ativarAlertaVisual() {
+            let originalTitle = document.title;
+            let piscando = true;
+            let contador = 0;
+
+            let intervaloPisca = setInterval(() => {
+                document.title = piscando ? "🚨 NOVO PEDIDO!" : originalTitle;
+                document.getElementById('mainBody').style.backgroundColor = piscando ? "#ffe4e6" : "#f8fafc";
+                piscando = !piscando;
+                contador++;
+
+                if (contador > 10) {
+                    clearInterval(intervaloPisca);
+                    document.title = originalTitle;
+                    document.getElementById('mainBody').style.backgroundColor = "#f8fafc";
+                }
+            }, 800);
+        }
+
+        async function mudarStatus(id, novoStatus) {
+            try {
+                let resposta = await fetch(`/admin/{{ est.slug }}/pedido/${id}/mudar-status-json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+                if (resposta.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Erro ao atualizar status.');
+                }
+            } catch (e) {
+                console.error('Erro:', e);
+            }
+        }
+
+        setInterval(async () => {
+            if (ultimoPedidoConhecido === null) return;
+            try {
+                let resposta = await fetch('/admin/{{ est.slug }}/verificar-novos-pedidos');
+                if (!resposta.ok) return;
+                let dados = await resposta.json();
+
+                if (dados.ultimo_pedido_id > ultimoPedidoConhecido) {
+                    ultimoPedidoConhecido = dados.ultimo_pedido_id;
+                    tocarAlarmeSonoro();
+                    ativarAlertaVisual();
+                    setTimeout(() => { window.location.reload(); }, 1500);
+                }
+            } catch (erro) {
+                console.error('Erro ao verificar novos pedidos:', erro);
+            }
+        }, 5000);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

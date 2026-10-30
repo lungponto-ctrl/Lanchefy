@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Imprimir Pedido #{{ pedido.id }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            width: 300px;
+            margin: 0 auto;
+            padding: 10px;
+            color: #000;
+            background: #fff;
+        }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .border-bottom { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+        @media print {
+            body { width: 100%; margin: 0; padding: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="iniciarImpressaoAutomaticamente()">
+
+    <div class="text-center fw-bold" style="font-size: 16px;">{{ est.nome }}</div>
+    <div class="text-center border-bottom">COMPROVANTE DE PRODUÇÃO</div>
+
+    <div><strong>Pedido:</strong> #{{ pedido.id }}</div>
+    <div><strong>Tipo:</strong> {{ pedido.tipo_pedido }}</div>
+    <div><strong>Horário:</strong> {{ pedido.data_inicio.strftime('%H:%M:%S') }}</div>
+    <div class="border-bottom"><strong>Cliente:</strong> {{ pedido.cliente_nome }}</div>
+
+    {% if pedido.tipo_pedido == 'Delivery' and pedido.cliente_endereco %}
+    <div class="border-bottom"><strong>Endereço:</strong><br>{{ pedido.cliente_endereco }}</div>
+    {% endif %}
+
+    <div class="fw-bold border-bottom">ITENS DO PEDIDO:</div>
+    <div class="border-bottom">
+        <div>{{ pedido.cliente_nome }} - Total: R$ {{ "%.2f"|format(pedido.total) }}</div>
+    </div>
+
+    <div class="border-bottom">
+        <div><strong>Forma de Pag.:</strong> {{ pedido.forma_pagamento }}</div>
+    </div>
+
+    <div class="text-center fw-bold" style="margin-top: 15px;">--- FIM DO PEDIDO ---</div>
+
+    <div class="no-print text-center" style="margin-top: 20px;">
+        <button onclick="window.print()" style="padding: 10px; width: 100%; cursor: pointer;">Imprimir Novamente</button>
+    </div>
+
+    <script>
+        async function iniciarImpressaoAutomaticamente() {
+            try {
+                await fetch('/admin/{{ est.slug }}/pedido/{{ pedido.id }}/mudar-status-json', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'Em Preparo' })
+                });
+            } catch (erro) {
+                console.error('Erro ao atualizar status:', erro);
+            }
+
+            window.print();
+
+            setTimeout(() => {
+                window.close();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

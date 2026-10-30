@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Administrativo | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: {{ est.cor_primaria if est else '#FF5722' }};
+            --bg-color: {{ est.cor_fundo if est else '#f8fafc' }};
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-login {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            font-size: 0.95rem;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15);
+        }
+        .btn-login {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            transition: opacity 0.2s;
+        }
+        .btn-login:hover {
+            opacity: 0.9;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-login">
+        <div class="text-center mb-4">
+            <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle d-inline-flex mb-2">
+                <i class="fa-solid fa-lock fa-xl text-danger"></i>
+            </div>
+            <h4 class="fw-bold text-dark m-0">Painel do Lojista</h4>
+            <p class="text-muted small mt-1">Digite a senha para gerenciar a lanchonete.</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-danger border-0 shadow-sm rounded-3 py-2 small mb-3" role="alert">
+                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form action="/admin/{{ slug }}/login" method="POST">
+            <div class="mb-4">
+                <label class="form-label fw-semibold small text-secondary text-uppercase">Senha de Acesso</label>
+                <input type="password" class="form-control" name="senha" placeholder="Sua senha..." required autofocus>
+            </div>
+
+            <button type="submit" class="btn btn-login w-100 shadow-sm mb-3">
+                <i class="fa-solid fa-right-to-bracket me-2"></i> Entrar no Painel
+            </button>
+
+            <div class="text-center">
+                <a href="/lanchonete/{{ slug }}" class="text-muted small text-decoration-none">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Voltar para o Cardápio Online
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

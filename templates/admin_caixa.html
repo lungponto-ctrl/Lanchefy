@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frente de Caixa (PDV) - {{ est.nome }} | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: {{ est.cor_primaria }};
+        }
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+        }
+        .navbar-admin {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .brand-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .card-produto-pdv {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .card-produto-pdv:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .produto-img-pdv {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            background-color: #f1f5f9;
+        }
+        .card-comanda {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: white;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);
+        }
+        .lista-itens-comanda {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+        .btn-custom {
+            border-radius: 10px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .btn-custom:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-admin shadow-sm py-3 mb-4">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="brand-badge"><i class="fa-solid fa-store me-2"></i>{{ est.nome }}</span>
+                <span class="text-muted fw-semibold">| Frente de Caixa (PDV)</span>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="/lanchonete/{{ est.slug }}" target="_blank" class="btn btn-success btn-sm fw-bold px-3">
+                    <i class="fa-solid fa-external-link-alt me-1"></i> Ver Cardápio Online 🛒
+                </a>
+                <div class="vr mx-1 text-muted"></div>
+                <a href="/admin/{{ est.slug }}/produtos" class="btn btn-custom btn-sm">
+                    <i class="fa-solid fa-burger me-1 text-muted"></i> Produtos
+                </a>
+                <a href="/admin/{{ est.slug }}/pedidos" class="btn btn-custom btn-sm">
+                    <i class="fa-solid fa-clipboard-list me-1 text-muted"></i> Pedidos
+                </a>
+                <a href="/admin/{{ est.slug }}/financeiro" class="btn btn-custom btn-sm">
+                    <i class="fa-solid fa-chart-pie me-1 text-muted"></i> Financeiro
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mb-5">
+        <div class="row">
+
+            <!-- COLUNA DA ESQUERDA: VITRINE DE PRODUTOS PARA CLICAR -->
+            <div class="col-lg-8 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold m-0"><i class="fa-solid fa-cash-register text-primary me-2"></i>Selecione os Produtos da Venda</h4>
+                    <span class="text-muted small">Clique no produto para adicionar à comanda</span>
+                </div>
+
+                {% if produtos %}
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
+                        {% for p in produtos %}
+                        <div class="col">
+                            <div class="card card-produto-pdv h-100" onclick="adicionarAoPDV('{{ p.id }}', '{{ p.nome | replace("'", "") }}', {{ p.preco }})">
+                                {% if p.foto %}
+                                    <img src="{{ url_for('static', filename='uploads/' + p.foto) }}" class="produto-img-pdv" alt="{{ p.nome }}">
+                                {% else %}
+                                    <div class="produto-img-pdv d-flex align-items-center justify-content-center text-muted">
+                                        <i class="fa-solid fa-burger fa-2x opacity-50"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body p-2 d-flex flex-column justify-content-between text-center">
+                                    <h6 class="fw-bold text-dark mb-1 text-truncate" title="{{ p.nome }}">{{ p.nome }}</h6>
+                                    <span class="fw-bold text-success">R$ {{ "%.2f"|format(p.preco) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card border-0 shadow-sm p-5 text-center bg-white rounded-4">
+                        <div class="text-muted mb-3">
+                            <i class="fa-solid fa-box-open fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Nenhum produto cadastrado</h5>
+                        <p class="text-muted small mb-3">Cadastre produtos para poder realizar vendas rápidas no balcão.</p>
+                        <a href="/admin/{{ est.slug }}/produtos" class="btn btn-outline-dark btn-sm fw-bold mx-auto px-4">
+                            Cadastrar Produtos
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- COLUNA DA DIREITA: COMANDA / CHECKOUT DO PDV -->
+            <div class="col-lg-4">
+                <div class="card card-comanda p-4">
+                    <h5 class="fw-bold mb-3 text-dark border-bottom pb-2"><i class="fa-solid fa-receipt me-2 text-primary"></i>Comanda do Balcão</h5>
+
+                    <div id="listaComanda" class="lista-itens-comanda mb-3">
+                        <div class="text-center text-muted py-4 small" id="comandaVazia">
+                            Comanda vazia.<br>Clique nos produtos ao lado.
+                        </div>
+                    </div>
+
+                    <div id="dadosPagamentoPDV" style="display: none;">
+                        <hr class="text-muted">
+
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold small text-muted">NOME DO CLIENTE (OPCIONAL)</label>
+                            <input type="text" class="form-control" id="clienteNomePDV" value="Cliente Balcão" placeholder="Nome do cliente">
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold small text-muted">TELEFONE / WHATSAPP</label>
+                            <input type="text" class="form-control" id="clienteTelefonePDV" value="Balcão Presencial" placeholder="(00) 00000-0000">
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold small text-muted">FORMA DE PAGAMENTO</label>
+                            <select class="form-select" id="formaPagamentoPDV" onchange="toggleTrocoPDV()">
+                                <option value="Dinheiro">Dinheiro 💵</option>
+                                <option value="Pix">Pix 📱</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito 💳</option>
+                                <option value="Cartão de Débito">Cartão de Débito 💳</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="blocoTrocoPDV">
+                            <label class="form-label fw-semibold small text-muted">TROCO PARA QUANTO? (R$)</label>
+                            <input type="text" class="form-control" id="trocoParaPDV" placeholder="Ex: 50.00">
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 pt-2 border-top">
+                            <span class="fw-bold text-secondary">Total a Pagar:</span>
+                            <span class="fw-bold text-success fs-4" id="spanTotalPDV">R$ 0,00</span>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 py-3 fw-bold rounded-3 shadow-sm" onclick="finalizarVendaPDV()">
+                            <i class="fa-solid fa-check-circle me-2"></i> Finalizar e Registrar Venda
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let comanda = [];
+
+        function adicionarAoPDV(id, nome, preco) {
+            preco = parseFloat(preco);
+            let item = comanda.find(p => p.id === String(id));
+            if (item) {
+                item.qtd++;
+            } else {
+                comanda.push({ id: String(id), nome: nome, preco: preco, qtd: 1 });
+            }
+            atualizarComanda();
+        }
+
+        function alterarQtdPDV(id, delta) {
+            let item = comanda.find(p => p.id === String(id));
+            if (item) {
+                item.qtd += delta;
+                if (item.qtd <= 0) {
+                    comanda = comanda.filter(p => p.id !== String(id));
+                }
+            }
+            atualizarComanda();
+        }
+
+        function atualizarComanda() {
+            let listaDiv = document.getElementById('listaComanda');
+            let comandaVazia = document.getElementById('comandaVazia');
+            let dadosPagamento = document.getElementById('dadosPagamentoPDV');
+
+            if (!listaDiv) return;
+            listaDiv.innerHTML = '';
+
+            if (comanda.length === 0) {
+                if (comandaVazia) comandaVazia.style.display = 'block';
+                if (dadosPagamento) dadosPagamento.style.display = 'none';
+                return;
+            }
+
+            if (comandaVazia) comandaVazia.style.display = 'none';
+            if (dadosPagamento) dadosPagamento.style.display = 'block';
+
+            let valorTotal = 0;
+
+            comanda.forEach(item => {
+                let subtotal = item.preco * item.qtd;
+                valorTotal += subtotal;
+
+                let divItem = document.createElement('div');
+                divItem.className = 'd-flex justify-content-between align-items-center mb-2 pb-2 border-bottom';
+                divItem.innerHTML = `
+                    <div>
+                        <strong class="small text-dark d-block">${item.nome}</strong>
+                        <span class="text-muted small">R$ ${item.preco.toFixed(2)} x ${item.qtd}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="alterarQtdPDV('${item.id}', -1)">-</button>
+                        <span class="fw-bold small">${item.qtd}</span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="alterarQtdPDV('${item.id}', 1)">+</button>
+                    </div>
+                `;
+                listaDiv.appendChild(divItem);
+            });
+
+            let spanTotal = document.getElementById('spanTotalPDV');
+            if (spanTotal) {
+                spanTotal.innerText = `R$ ${valorTotal.toFixed(2)}`;
+            }
+        }
+
+        function toggleTrocoPDV() {
+            let pagamento = document.getElementById('formaPagamentoPDV').value;
+            let blocoTroco = document.getElementById('blocoTrocoPDV');
+            if (blocoTroco) {
+                blocoTroco.style.display = (pagamento === 'Dinheiro') ? 'block' : 'none';
+            }
+        }
+
+        async function finalizarVendaPDV() {
+            let nome = document.getElementById('clienteNomePDV').value || 'Cliente Balcão';
+            let telefone = document.getElementById('clienteTelefonePDV').value || 'Balcão Presencial';
+            let pagamento = document.getElementById('formaPagamentoPDV').value;
+            let troco = document.getElementById('trocoParaPDV') ? document.getElementById('trocoParaPDV').value : '';
+
+            let valorTotal = 0;
+            comanda.forEach(item => {
+                valorTotal += item.preco * item.qtd;
+            });
+
+            if (valorTotal <= 0) {
+                alert('Adicione pelo menos um produto à comanda!');
+                return;
+            }
+
+            try {
+                let resposta = await fetch('/admin/{{ est.slug }}/caixa-balcao', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cliente_nome: nome,
+                        cliente_telefone: telefone,
+                        forma_pagamento: pagamento,
+                        troco_para: troco,
+                        total: valorTotal
+                    })
+                });
+
+                let resultado = await resposta.json();
+                if (resultado.status === 'sucesso') {
+                    alert('✅ Venda registrada com sucesso!');
+                    window.location.href = '/admin/{{ est.slug }}/financeiro';
+                } else {
+                    alert('Erro ao registrar venda. Tente novamente.');
+                }
+            } catch (erro) {
+                console.error('Erro:', erro);
+                alert('Erro de conexão ao registrar venda.');
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

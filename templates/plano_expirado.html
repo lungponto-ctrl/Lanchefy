@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Período de Teste Expirado | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; font-family: 'Inter', system-ui, sans-serif; color: #f8fafc; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card-block { background-color: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 40px; max-width: 480px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4); }
+        .btn-whatsapp { background-color: #25d366; border: none; color: white; font-weight: 700; padding: 14px; border-radius: 12px; width: 100%; text-decoration: none; display: inline-block; }
+        .btn-whatsapp:hover { background-color: #20ba5a; color: white; }
+    </style>
+</head>
+<body>
+    <div class="card-block">
+        <div class="mb-4 text-warning">
+            <i class="fa-solid fa-triangle-exclamation fa-3x"></i>
+        </div>
+        <h3 class="fw-bold text-white mb-2">Período de Teste Expirado</h3>
+        <p class="text-muted small mb-4">O seu período de 10 dias gratuitos do sistema <strong>Lanchefy</strong> para a loja <strong>{{ est.nome }}</strong> chegou ao fim e o acesso foi temporariamente suspenso.</p>
+
+        <p class="small text-light mb-4">Para continuar a utilizar o cardápio digital, receber pedidos via WhatsApp e manter o seu painel ativo, entre em contato com a nossa administração para regularizar a assinatura.</p>
+
+        <a href="https://api.whatsapp.com/send?phone=5531972148479&text=Olá!%20Meu%20teste%20gratuito%20do%20Lanchefy%20para%20a%20loja%20*{{%20est.nome%20}}*%20expirou.%20Gostaria%20de%20ativar%20minha%20conta!" target="_blank" class="btn btn-whatsapp shadow-sm">
+            <i class="fa-brands fa-whatsapp me-2 fs-5"></i> Falar com Suporte para Continuar
+        </a>
+    </div>
+</body>
+</html>

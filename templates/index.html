@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lanchefy | Sistema Completo para Lanchonetes e Delivery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #0f172a;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+        .main-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            max-width: 520px;
+            width: 100%;
+            padding: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+        .plan-box {
+            background: rgba(255, 87, 34, 0.1);
+            border: 1px dashed #ff5722;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .plan-desc {
+            color: #cbd5e1 !important;
+            font-size: 0.9rem;
+        }
+        .info-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 25px;
+        }
+        .form-control, .form-select {
+            background-color: #0f172a;
+            border: 1px solid #475569;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.95rem;
+        }
+        .form-control::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #0f172a;
+            border-color: #ff5722;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.2);
+        }
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #e2e8f0;
+            margin-bottom: 6px;
+        }
+        .btn-submit {
+            background-color: #ff5722;
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+        .btn-submit:hover {
+            opacity: 0.9;
+            background-color: #f4511e;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container d-flex justify-content-center">
+        <div class="main-card">
+
+            <div class="text-center mb-4">
+                <h3 class="fw-bold text-white mb-1"><i class="fa-solid fa-burger text-warning me-2"></i>Lanchefy</h3>
+                <p class="text-light opacity-75 small mb-0">Sistema Completo para Gestão de Lanchonetes e Delivery</p>
+            </div>
+
+            <!-- CAIXA DE PLANO COM 10 DIAS GRÁTIS -->
+            <div class="plan-box">
+                <span class="badge bg-warning text-dark mb-2 px-3 py-1 fw-bold rounded-pill">10 DIAS DE TESTE GRATUITO</span>
+                <h2 class="fw-bold text-white mb-2">R$ 79,90 <span class="small text-light opacity-75 fs-6">/ mês após o teste</span></h2>
+                <p class="plan-desc mb-0">Cardápio digital próprio + Link exclusivo para clientes + Pedidos em tempo real via WhatsApp. <strong>Comece grátis hoje!</strong></p>
+            </div>
+
+            <div class="info-box">
+                <i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>
+                <span><strong>Teste Grátis:</strong> Preencha os dados abaixo e ganhe 10 dias de acesso completo imediato. O sistema notificará a administração automaticamente.</span>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert alert-danger border-0 small py-2 text-center rounded-3 mb-3" role="alert">
+                    {{ messages[0] }}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <form action="/cadastrar-lanchonete" method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Nome da Lanchonete</label>
+                    <input type="text" class="form-control" name="nome" placeholder="ex: Lanchonete do João" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Identificador no Site (Slug ex: lanchonete-do-joao)</label>
+                    <input type="text" class="form-control" name="slug" placeholder="ex: lanchonete-do-joao" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">WhatsApp da Loja</label>
+                    <input type="text" class="form-control" name="telefone" placeholder="ex: 31999998888" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Cor Primária</label>
+                        <input type="color" class="form-control form-control-color w-100" name="cor_primaria" value="#FF5722" title="Escolha a cor da marca">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Cor Secundária</label>
+                        <input type="color" class="form-control form-control-color w-100" name="cor_secundaria" value="#212121" title="Escolha a cor secundária">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Cor de Fundo</label>
+                        <input type="color" class="form-control form-control-color w-100" name="cor_fundo" value="#F8F9FA" title="Escolha a cor de fundo">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Senha de Acesso do Administrador</label>
+                    <input type="password" class="form-control" name="senha" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-submit shadow-sm">
+                    Criar Conta com 10 Dias Grátis 🚀
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

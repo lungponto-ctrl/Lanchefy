@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Super Admin - Gestão SaaS | Lanchefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { background-color: #0f172a; font-family: 'Inter', system-ui, sans-serif; color: #f8fafc; }
+        .navbar-saas { background-color: #1e293b; border-bottom: 1px solid #334155; }
+        .card-box { background-color: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 25px; }
+        .form-control { background-color: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; padding: 10px; font-size: 0.9rem; }
+        .form-control::placeholder { color: #94a3b8 !important; opacity: 1; }
+        .form-control:focus { background-color: #0f172a; border-color: #ff5722; color: white; box-shadow: 0 0 0 3px rgba(255,87,34,0.2); }
+        .form-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #cbd5e1; margin-bottom: 5px; }
+        .btn-danger-custom { background-color: #dc2626; border: none; color: white; font-weight: 700; border-radius: 8px; padding: 12px; }
+        .btn-danger-custom:hover { background-color: #b91c1c; color: white; }
+        .loja-card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 15px; }
+        .badge-ativa { background-color: #16a34a; color: white; font-size: 0.7rem; }
+        .badge-suspensa { background-color: #dc2626; color: white; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR TOPO -->
+    <nav class="navbar navbar-saas px-4 py-3 mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold text-white fs-5"><i class="fa-solid fa-rocket text-warning me-2"></i>Lanchefy Gestão SaaS</span>
+            <a href="/super-admin/logout" class="btn btn-danger btn-sm fw-bold px-3">Terminar Sessão</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mb-5">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-info border-0 shadow-sm rounded-3 mb-4" role="alert">
+                <i class="fa-solid fa-circle-info me-2"></i>{{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <!-- COLUNA ESQUERDA: CADASTRAR NOVA LOJA PARCEIRA -->
+            <div class="col-lg-5">
+                <div class="card-box shadow-sm">
+                    <h5 class="fw-bold text-white mb-4"><i class="fa-solid fa-store text-warning me-2"></i>Nova Loja Parceira</h5>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Nome da Lanchonete</label>
+                            <input type="text" class="form-control" name="nome" placeholder="ex: Lanchonete do João" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Identificador no Site (Slug ex: lanchonete-do-joao)</label>
+                            <input type="text" class="form-control" name="slug" placeholder="ex: lanchonete-do-joao" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp da Loja</label>
+                            <input type="text" class="form-control" name="telefone" placeholder="ex: 31999998888" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Endereço Completo</label>
+                            <input type="text" class="form-control" name="endereco" placeholder="Rua, Número, Bairro, Cidade">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cor Principal da Marca (Tema)</label>
+                            <input type="color" class="form-control form-control-color w-100" name="cor_primaria" value="#FF5722">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Senha do Administrador (Exige Segurança)</label>
+                            <input type="password" class="form-control" name="senha" placeholder="Mínimo 8 chars, maiúscula, especial..." required>
+                            <small class="text-light opacity-75 d-block mt-1" style="font-size: 0.75rem;">Exemplo válido: Lanchefy@2026!</small>
+                        </div>
+                        <button type="submit" class="btn btn-danger-custom w-100 shadow-sm">Registar e Ativar Loja</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- COLUNA DIREITA: LISTAGEM DAS LOJAS PARCEIRAS NO SAAS -->
+            <div class="col-lg-7">
+                <div class="card-box shadow-sm">
+                    <h5 class="fw-bold text-white mb-4"><i class="fa-solid fa-list text-warning me-2"></i>Lojas Parceiras no SaaS</h5>
+
+                    <div class="d-flex flex-column gap-3">
+                        {% for loja in lojas %}
+                        <div class="loja-card position-relative">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold text-white mb-0">{{ loja.nome }}</h6>
+                                <span class="badge {% if loja.status == 'Suspensa' %}badge-suspensa{% else %}badge-ativa{% endif %} rounded-pill px-2 py-1">
+                                    {{ loja.status or 'Ativa' }}
+                                </span>
+                            </div>
+                            <p class="small text-light opacity-75 mb-1"><i class="fa-solid fa-link me-1"></i> Identificador: <strong>{{ loja.slug }}</strong></p>
+                            <p class="small text-light opacity-75 mb-1"><i class="fa-solid fa-palette me-1"></i> Cor da Marca: <span style="display:inline-block; width:12px; height:12px; background:{{ loja.cor_primaria }}; border-radius:50%;"></span> {{ loja.cor_primaria }}</p>
+                            {% if loja.endereco %}
+                            <p class="small text-light opacity-75 mb-1"><i class="fa-solid fa-location-dot me-1"></i> {{ loja.endereco }}</p>
+                            {% endif %}
+                            <p class="small text-light opacity-75 mb-3"><i class="fa-brands fa-whatsapp me-1"></i> WhatsApp: {{ loja.telefone_whatsapp or 'Não informado' }}</p>
+
+                            <div class="headers-actions d-flex gap-2 flex-wrap">
+                                <a href="/lanchonete/{{ loja.slug }}" target="_blank" class="btn btn-primary btn-sm fw-bold px-3">
+                                    <i class="fa-solid fa-external-link-alt me-1"></i> Abrir Loja 🛒
+                                </a>
+                                <a href="/admin/{{ loja.slug }}/pedidos" target="_blank" class="btn btn-secondary btn-sm fw-bold px-3">
+                                    <i class="fa-solid fa-lock me-1"></i> Painel Admin
+                                </a>
+                                <form action="/super-admin/loja/{{ loja.id }}/toggle-status" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-warning btn-sm fw-bold px-3">
+                                        {% if loja.status == 'Suspensa' %}Ativar{% else %}Suspender{% endif %}
+                                    </button>
+                                </form>
+                                <form action="/super-admin/loja/{{ loja.id }}/excluir" method="POST" class="d-inline" onsubmit="return confirm('Deseja realmente excluir esta loja do SaaS?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3">Excluir</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            Nenhuma loja parceira cadastrada no momento.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
